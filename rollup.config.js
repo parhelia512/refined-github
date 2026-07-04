@@ -38,11 +38,16 @@ const rollup = {
 		welcome: './source/welcome.svelte',
 		graphql: './source/graphql.svelte',
 		header: './source/options/header.svelte',
+		'feature-finder': './source/options/feature-finder.svelte',
 		'storage-usage': './source/options/storage-usage.svelte',
 		'version-info': './source/options/version-info.svelte',
-		background: './source/background.ts',
+		'rate-link': './source/options/rate-link.svelte',
+		'hot-fixes': './source/options/hot-fixes.svelte',
+		'token-input': './source/options/token-input.svelte',
+
 		'refined-github': './source/refined-github.ts',
 		'content-script': './source/content-script.ts',
+		background: './source/background.ts',
 	},
 	output: {
 		dir: 'distribution/assets',

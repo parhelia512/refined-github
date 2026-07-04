@@ -3,39 +3,23 @@ import './options.css';
 import delegate, {type DelegateEvent} from 'delegate-it';
 import {enableTabToIndent} from 'indent-textarea';
 import {$, $$, $optional, closestElementOptional, elementExists} from 'select-dom';
-import {isChrome, isFirefox} from 'webext-detect';
 import type {SyncedForm} from 'webext-options-sync-per-domain';
 import 'webext-bugs/target-blank';
 
 import {messageRuntime} from 'webext-msg';
 
-import {startFeatureIdentification} from './helpers/bisect.js';
 import clearCacheHandler from './helpers/clear-cache-handler.js';
 import {doesBrowserActionOpenOptions} from './helpers/feature-utils.js';
-import {brokenFeatures, styleHotfixes} from './helpers/hotfix.js';
-import isDevelopmentVersion from './helpers/is-development-version.js';
 import {perDomainOptions} from './options-storage.js';
 import initFeatureList, {updateListDom} from './options/feature-list.js';
 import initToggleAllButtons from './options/toggle-all.js';
-import initTokenValidation from './options/token-validation.js';
 
 let syncedForm: SyncedForm | undefined;
-
-const {version} = chrome.runtime.getManifest();
-
-async function findFeatureHandler(this: HTMLButtonElement): Promise<void> {
-	// TODO: Add support for GHE
-	await startFeatureIdentification();
-
-	this.disabled = true;
-	setTimeout(() => {
-		this.disabled = false;
-	}, 10_000);
-
-	$('#find-feature-message').hidden = false;
-}
-
 let hasScrolledToTarget = false;
+
+function informComponentOfExternalUpdate(field: HTMLInputElement | HTMLTextAreaElement): void {
+	field.dispatchEvent(new InputEvent('input', {bubbles: true}));
+}
 
 function focusSection({delegateTarget: section}: DelegateEvent<Event, HTMLDetailsElement>): void {
 	if (!hasScrolledToTarget && elementExists(':target')) {
@@ -55,55 +39,6 @@ function focusSection({delegateTarget: section}: DelegateEvent<Event, HTMLDetail
 	}
 }
 
-function updateRateLink(): void {
-	if (isChrome()) {
-		return;
-	}
-
-	$('a#rate-link').href = isFirefox()
-		? 'https://addons.mozilla.org/firefox/addon/refined-github-'
-		: 'https://apps.apple.com/app/id1519867270?action=write-review';
-}
-
-function isEnterprise(): boolean {
-	return syncedForm!.getSelectedDomain() !== 'default';
-}
-
-function getExclusions(): string | void {
-	if (isEnterprise()) {
-		return 'Hotfixes are not applied on GitHub Enterprise.';
-	}
-
-	if (isDevelopmentVersion()) {
-		return 'Hotfixes are not applied in the development version';
-	}
-}
-
-async function showStoredCssHotfixes(): Promise<void> {
-	$('#hotfixes-field').textContent = getExclusions()
-		?? await styleHotfixes.getCached(version)
-		?? 'No CSS found in cache.';
-}
-
-async function fetchHotfixes(event: MouseEvent): Promise<void> {
-	const button = event.currentTarget as HTMLButtonElement;
-	button.disabled = true;
-	try {
-		// Style
-		$('#hotfixes-field').textContent = getExclusions()
-			?? await styleHotfixes.getFresh(version)
-			?? 'No hotfixes needed for this version! 🎉';
-
-		// Broken features
-		const storage = await brokenFeatures.getFresh();
-		const field = $('#broken-features-field');
-		field.hidden = false;
-		field.textContent = JSON.stringify(storage, undefined, 2);
-	} finally {
-		button.disabled = false;
-	}
-}
-
 async function validateBackgroundPage(): Promise<void> {
 	if (await messageRuntime({ping: true}) !== 'pong') {
 		$('.js-background-fail-banner').hidden = false;
@@ -117,6 +52,12 @@ async function generateDom(): Promise<void> {
 	// Update list from saved options
 	syncedForm = await perDomainOptions.syncForm('form');
 
+	// <token-input> runs before the value is set, so it detects `firstRun` to avoid validation on an empty form.
+	// This triggers a proper run
+	for (const tokenField of $$('token-input input')) {
+		informComponentOfExternalUpdate(tokenField);
+	}
+
 	// Decorate list
 	updateListDom();
 	initToggleAllButtons();
@@ -124,19 +65,10 @@ async function generateDom(): Promise<void> {
 	// Only now the form is ready, we can show it
 	$('#js-failed').remove();
 
-	// Enable token validation
-	void initTokenValidation(syncedForm);
-
-	// Update rate link if necessary
-	updateRateLink();
-
 	// Hide non-applicable "Button link" section
 	if (doesBrowserActionOpenOptions) {
 		$('#action').hidden = true;
 	}
-
-	// Show stored CSS hotfixes
-	void showStoredCssHotfixes();
 
 	void validateBackgroundPage();
 }
@@ -144,11 +76,23 @@ async function generateDom(): Promise<void> {
 function addEventListeners(): void {
 	// Update domain-dependent page content when the domain is changed
 	syncedForm?.onChange(async domain => {
+		const host = domain === 'default' ? 'github.com' : domain;
 		// Point the link to the right domain
-		$('a#personal-token-link').host = domain === 'default' ? 'github.com' : domain;
+		$('a#personal-token-link').host = host;
+
+		// Hot fixes are not used on GHE
+		$('hot-fixes').toggleAttribute('enterprise', domain !== 'default');
+
+		// Hide "Button link" on GHE domains https://github.com/refined-github/refined-github/issues/7704
+		$('#action').hidden = domain !== 'default' || !doesBrowserActionOpenOptions;
 
 		for (const element of $$('storage-usage[item]')) {
 			element.setAttribute('item', domain === 'default' ? 'options' : 'options:' + domain);
+		}
+
+		for (const element of $$('token-input')) {
+			element.setAttribute('host', host);
+			informComponentOfExternalUpdate($('input', element));
 		}
 
 		updateListDom();
@@ -170,12 +114,6 @@ function addEventListeners(): void {
 
 	// Add cache clearer
 	$('#clear-cache').addEventListener('click', clearCacheHandler);
-
-	// Add bisect tool
-	$('#find-feature').addEventListener('click', findFeatureHandler);
-
-	// Handle "Fetch hotfixes" button
-	$('#fetch-hotfixes').addEventListener('click', fetchHotfixes);
 }
 
 function scrollTargetIntoView(): void {
