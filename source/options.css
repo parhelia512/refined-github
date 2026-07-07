@@ -1,15 +1,3 @@
-#js-failed + form {
-	display: none;
-}
-
-#js-failed {
-	max-width: var(--content-width);
-	margin: auto;
-	padding: 1em var(--viewport-margin);
-	animation: fade-in 0s 1s backwards;
-	white-space: pre-line;
-}
-
 :root {
 	--rgh-red: #cf222e;
 	--content-width: 750px; /* Sync with media query below */
@@ -43,19 +31,13 @@ html::after {
 	}
 }
 
-@keyframes fade-in {
-	from {
-		opacity: 0;
-	}
-}
-
 p,
 ul {
 	margin-top: 0;
 }
 
 /* :not() due to https://github.com/refined-github/refined-github/issues/8062 */
-p:last-child:not(.info p),
+p:last-child:not(.info p, background-status p),
 ul:last-child {
 	margin-bottom: 0;
 }
@@ -67,10 +49,6 @@ ul {
 
 storage-usage {
 	font-style: italic;
-}
-
-small {
-	opacity: 80%;
 }
 
 details {
@@ -123,74 +101,19 @@ summary:hover {
 	font-size: 11px;
 }
 
-.feature:not([hidden]) {
-	display: flex;
-	align-items: baseline;
-	flex-wrap: wrap;
-	gap: 0 0.4em;
+.error-banner {
+	padding: 1em;
+	border: 1px solid var(--rgh-red);
+	background: color-mix(in srgb, var(--rgh-red) 10%, transparent);
+}
 
-	padding: 0.5em 0;
-	&:first-of-type {
-		padding-top: 0;
+#js-failed {
+	animation: show 0s 1s both;
+	white-space: pre-line;
+}
+
+@keyframes show {
+	from {
+		display: none;
 	}
-	p {
-		margin-bottom: 0;
-	}
-
-	&:target {
-		outline: solid 2px transparent;
-		border-radius: var(--border-radius);
-		animation-name: blink-border;
-		animation-duration: 1.5s;
-		animation-iteration-count: 2;
-		scroll-margin-top: 64px;
-	}
-}
-
-@keyframes blink-border {
-	50% {
-		outline-color: #1f6feb;
-	}
-}
-
-.feature input[type='checkbox'] {
-	flex-shrink: 0;
-	scroll-margin-top: 64px;
-}
-
-.feature-checkbox:not(:checked) + .info .feature-name {
-	text-decoration: line-through;
-}
-
-.feature:has(.feature-checkbox:disabled) > *:not(.hotfix-notice) {
-	opacity: 50%;
-}
-
-.feature .info {
-	flex: 1;
-}
-
-.feature .description {
-	opacity: 80%;
-}
-
-.feature-link {
-	margin: 0 0.6em;
-}
-
-.screenshot {
-	max-width: 100%;
-	margin-bottom: 2em;
-	border: 1px solid #d1d5da;
-	border-radius: 0.5em;
-	min-width: 2em;
-	min-height: 2em;
-}
-
-.screenshot-toggle:checked ~ .screenshot-link {
-	font-style: italic;
-}
-
-.screenshot-toggle:checked ~ .screenshot {
-	display: block;
 }

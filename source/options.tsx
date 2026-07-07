@@ -15,7 +15,6 @@ function informComponentOfExternalUpdate(field: HTMLInputElement | HTMLTextAreaE
 }
 
 async function generateDom(): Promise<SyncedForm> {
-	// Generate list
 	await initFeatureList();
 
 	// Update list from saved options
@@ -31,7 +30,7 @@ async function generateDom(): Promise<SyncedForm> {
 	updateListDom();
 	initToggleAllButtons();
 
-	// Only now the form is ready, we can show it
+	// JS loaded, remove message before it appears
 	$('#js-failed').remove();
 
 	return syncedForm;
