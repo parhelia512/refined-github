@@ -8,11 +8,7 @@
 <link rel="stylesheet" href="options.css">
 <script src="options-preflight.js"></script>
 <script type="module" src="header.js"></script>
-<script type="module" src="storage-usage.js"></script>
-<script type="module" src="rate-link.js"></script>
-<script type="module" src="feature-finder.js"></script>
-<script type="module" src="hot-fixes.js"></script>
-<script type="module" src="token-input.js"></script>
+<script type="module" src="options-components.js"></script>
 <script type="module" src="options.js" defer></script>
 <rgh-header title="Refined GitHub" with-version>
 	<p>
@@ -28,10 +24,9 @@
 	<!-- Captures and ignores native enter-to-submit action -->
 	<button hidden>Capture Submit</button>
 
-	<p hidden class="js-background-fail-banner">
-		It seems that the background page failed to load. This breaks some features. Please <a href="https://github.com/refined-github/refined-github/issues/new?template=1_bug_report.yml">report it</a>.
-	</p>
+	<background-status></background-status>
 
+	<handle-expand>
 	<details id="token">
 		<summary><strong>🔑 Personal token</strong></summary>
 		<div>
@@ -41,7 +36,9 @@
 			<token-input></token-input>
 		</div>
 	</details>
+	</handle-expand>
 
+	<handle-expand>
 	<details id="toggle-all" hidden>
 		<summary><strong>🏳️ Toggle all features</strong></summary>
 		<div>
@@ -57,7 +54,9 @@
 			</p>
 		</div>
 	</details>
+	</handle-expand>
 
+	<handle-expand>
 	<details id="features">
 		<summary><strong class="features-header">🔋 Features</strong></summary>
 		<div>
@@ -68,12 +67,16 @@
 			<div class="js-features"></div>
 		</div>
 	</details>
+	</handle-expand>
 
+	<handle-expand>
 	<details id="bisect">
 		<summary><strong>🔎 Identify feature</strong></summary>
 		<feature-finder></feature-finder>
 	</details>
+	</handle-expand>
 
+	<handle-expand>
 	<details id="css">
 		<summary><strong>💅 Custom CSS</strong></summary>
 		<div>
@@ -83,16 +86,13 @@
 			<p>When the storage is full, the options <a href="https://github.com/fregante/webext-options-sync/issues/27">will stop being saved</a>. If you need to use a lot of CSS, use a dedicated userstyle extension.</p>
 		</div>
 	</details>
+	</handle-expand>
 
-	<details id="action">
-		<summary><strong>🔗 Button link</strong></summary>
-		<div>
-			<p>You can pick what page opens when you click the Refined GitHub icon in the browser toolbar</p>
-			<p><input type="url" name="actionUrl" placeholder="https://example.com" spellcheck="false" autocomplete="off" autocapitalize="off"></p>
-			<p>If left empty, clicking it will open this options page.</p>
-		</div>
-	</details>
+	<handle-expand>
+		<action-link></action-link>
+	</handle-expand>
 
+	<handle-expand>
 	<details id="debugging">
 		<summary><strong>🐛 Debugging</strong></summary>
 		<div>
@@ -110,7 +110,8 @@
 			</p>
 			<p>
 				Options storage: <storage-usage area="sync" item="options">unknown</storage-usage><br>
-				Cache storage: <storage-usage area="local">unknown</storage-usage>
+				Cache storage: <storage-usage area="local">unknown</storage-usage><br>
+				Refined Github version: <rgh-version></rgh-version>
 			</p>
 			<p>
 				<button id="clear-cache">Clear cache</button>
@@ -127,12 +128,16 @@
 			</p>
 		</div>
 	</details>
+	</handle-expand>
 
+	<handle-expand>
 	<details id="hotfixes">
 		<summary><strong>☄️ Hotfixes</strong></summary>
 		<hot-fixes></hot-fixes>
 	</details>
+	</handle-expand>
 
+	<handle-expand>
 	<details id="export">
 		<summary><strong>🗄️ Export options</strong></summary>
 		<div>
@@ -148,6 +153,7 @@
 			</p>
 		</div>
 	</details>
+	</handle-expand>
 
 </form>
 

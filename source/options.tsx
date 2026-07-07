@@ -1,56 +1,25 @@
 import 'webext-base-css/webext-base.css';
 import './options.css';
-import delegate, {type DelegateEvent} from 'delegate-it';
 import {enableTabToIndent} from 'indent-textarea';
-import {$, $$, $optional, closestElementOptional, elementExists} from 'select-dom';
+import {$, $$} from 'select-dom';
 import type {SyncedForm} from 'webext-options-sync-per-domain';
 import 'webext-bugs/target-blank';
 
-import {messageRuntime} from 'webext-msg';
-
 import clearCacheHandler from './helpers/clear-cache-handler.js';
-import {doesBrowserActionOpenOptions} from './helpers/feature-utils.js';
 import {perDomainOptions} from './options-storage.js';
 import initFeatureList, {updateListDom} from './options/feature-list.js';
 import initToggleAllButtons from './options/toggle-all.js';
-
-let syncedForm: SyncedForm | undefined;
-let hasScrolledToTarget = false;
 
 function informComponentOfExternalUpdate(field: HTMLInputElement | HTMLTextAreaElement): void {
 	field.dispatchEvent(new InputEvent('input', {bubbles: true}));
 }
 
-function focusSection({delegateTarget: section}: DelegateEvent<Event, HTMLDetailsElement>): void {
-	if (!hasScrolledToTarget && elementExists(':target')) {
-		return;
-	}
-
-	const rect = section.getBoundingClientRect();
-	if (rect.bottom > window.innerHeight || rect.top < 0) {
-		section.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-	}
-
-	if (section.open) {
-		const field = $optional('input, textarea', section);
-		if (field) {
-			field.focus({preventScroll: true});
-		}
-	}
-}
-
-async function validateBackgroundPage(): Promise<void> {
-	if (await messageRuntime({ping: true}) !== 'pong') {
-		$('.js-background-fail-banner').hidden = false;
-	}
-}
-
-async function generateDom(): Promise<void> {
+async function generateDom(): Promise<SyncedForm> {
 	// Generate list
 	await initFeatureList();
 
 	// Update list from saved options
-	syncedForm = await perDomainOptions.syncForm('form');
+	const syncedForm = await perDomainOptions.syncForm('form');
 
 	// <token-input> runs before the value is set, so it detects `firstRun` to avoid validation on an empty form.
 	// This triggers a proper run
@@ -65,18 +34,14 @@ async function generateDom(): Promise<void> {
 	// Only now the form is ready, we can show it
 	$('#js-failed').remove();
 
-	// Hide non-applicable "Button link" section
-	if (doesBrowserActionOpenOptions) {
-		$('#action').hidden = true;
-	}
-
-	void validateBackgroundPage();
+	return syncedForm;
 }
 
-function addEventListeners(): void {
+function addEventListeners(syncedForm: SyncedForm): void {
 	// Update domain-dependent page content when the domain is changed
-	syncedForm?.onChange(async domain => {
+	syncedForm.onChange(async domain => {
 		const host = domain === 'default' ? 'github.com' : domain;
+
 		// Point the link to the right domain
 		$('a#personal-token-link').host = host;
 
@@ -84,7 +49,7 @@ function addEventListeners(): void {
 		$('hot-fixes').toggleAttribute('enterprise', domain !== 'default');
 
 		// Hide "Button link" on GHE domains https://github.com/refined-github/refined-github/issues/7704
-		$('#action').hidden = domain !== 'default' || !doesBrowserActionOpenOptions;
+		$('action-link').toggleAttribute('enterprise', domain !== 'default');
 
 		for (const element of $$('storage-usage[item]')) {
 			element.setAttribute('item', domain === 'default' ? 'options' : 'options:' + domain);
@@ -109,40 +74,13 @@ function addEventListeners(): void {
 	// Improve textareas editing
 	enableTabToIndent('textarea');
 
-	// Bring section into view when opened
-	delegate('details', 'toggle', focusSection, {capture: true});
-
 	// Add cache clearer
 	$('#clear-cache').addEventListener('click', clearCacheHandler);
 }
 
-function scrollTargetIntoView(): void {
-	const {hash} = location;
-	if (!hash) {
-		return;
-	}
-
-	const element = $optional(hash);
-	if (!element) {
-		return;
-	}
-
-	const details = closestElementOptional('details', element);
-	if (details) {
-		details.open = true;
-	}
-
-	element.scrollIntoView({
-		block: 'start',
-	});
-
-	hasScrolledToTarget = true;
-}
-
 async function init(): Promise<void> {
-	await generateDom();
-	addEventListeners();
-	scrollTargetIntoView();
+	const syncedForm = await generateDom();
+	addEventListeners(syncedForm);
 }
 
 await init();
