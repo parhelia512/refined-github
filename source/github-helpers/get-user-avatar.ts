@@ -9,7 +9,10 @@ export default function getUserAvatar(username: string, size: number): string | 
 	}
 
 	// Find image on page. Saves a request and a redirect + add support for bots
-	const existingAvatar = $optional(`[href="/${cleanName}" i] img`);
+	const existingAvatar = $optional([
+		`[href="/${cleanName}" i] img`,
+		`[href="/apps/${cleanName}" i] img`,
+	]);
 	if (existingAvatar) {
 		return existingAvatar.src;
 	}
