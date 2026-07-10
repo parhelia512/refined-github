@@ -75,7 +75,7 @@ function addStars(repoLink: HTMLElement, stargazerCount: number, viewerHasStarre
 
 	prepareForAddition(repoLink);
 
-	repoLink.after(
+	closestElement('li', repoLink).after(
 		<a
 			href={buildRepoUrl('stargazers')}
 			title={tooltip}
@@ -99,7 +99,7 @@ function markForked(repoLink: HTMLElement, forked?: {url: string}): void {
 	prepareForAddition(repoLink);
 	// Only show the clickable button at larger resolutions. Default to the native one on smaller screens
 	$('.octicon-repo-forked', repoLink).classList.add('d-sm-none');
-	repoLink.after(
+	closestElement('li', repoLink).after(
 		<a
 			href={forked.url}
 			className="d-none d-sm-flex flex-items-center flex-justify-center p-1 tmp-p-1 Button Button--invisible"
@@ -117,7 +117,7 @@ function addCiStatus(anchor: HTMLElement, ciCommit: string | undefined): void {
 	prepareForAddition(anchor);
 
 	const endpoint = buildRepoUrl('commits/checks-statuses-rollups');
-	anchor.parentElement!.append(
+	closestElement('li', anchor).after(
 		// Hide in small viewports
 		<span
 			className="rgh-ci-link d-none d-sm-flex flex-items-center flex-justify-center p-1 tmp-p-1 Button Button--invisible"
@@ -140,12 +140,12 @@ function addCiStatus(anchor: HTMLElement, ciCommit: string | undefined): void {
 async function add(repoLink: HTMLElement): Promise<void> {
 	const info = await getRepositoryInfo();
 
-	repoLink.classList.add('rgh-repo-header-info-updated');
+	closestElement('li', repoLink).classList.add('rgh-repo-header-info-updated');
 
 	markPrivate(repoLink, info.isPrivate);
+	addCiStatus(repoLink, info.ciCommit);
 	addStars(repoLink, info.stargazerCount, info.viewerHasStarred);
 	markForked(repoLink, info.forked);
-	addCiStatus(repoLink, info.ciCommit);
 }
 
 async function init(signal: AbortSignal): Promise<void> {
