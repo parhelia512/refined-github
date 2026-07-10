@@ -19,9 +19,6 @@ import observe from '../helpers/selector-observer.js';
 import AssociatedPullRequests from './show-associated-branch-prs-on-fork.gql';
 
 type PullRequest = {
-	timelineItems: {
-		nodes: AnyObject;
-	};
 	number: number;
 	state: keyof typeof stateIcon;
 	isDraft: boolean;
@@ -34,12 +31,16 @@ export const pullRequestsAssociatedWithBranch = new CachedFunction('associatedBr
 
 		const pullRequests: Record<string, PullRequest> = {};
 		for (const {name, associatedPullRequests} of repository.refs.nodes) {
-			const [prInfo] = associatedPullRequests.nodes as PullRequest[];
+			const [prInfo] = associatedPullRequests.nodes;
 			// Check if the ref was deleted, since the result includes pr's that are not in fact related to this branch but rather to the branch name.
 			const wasHeadRefDeleted = prInfo?.timelineItems.nodes[0]?.__typename === 'HeadRefDeletedEvent';
 			if (prInfo && !wasHeadRefDeleted) {
-				prInfo.state = prInfo.isDraft && prInfo.state === 'OPEN' ? 'DRAFT' : prInfo.state;
-				pullRequests[name] = prInfo;
+				pullRequests[name] = {
+					number: prInfo.number,
+					state: prInfo.isDraft && prInfo.state === 'OPEN' ? 'DRAFT' : prInfo.state,
+					isDraft: prInfo.isDraft,
+					url: prInfo.url,
+				};
 			}
 		}
 
@@ -51,14 +52,12 @@ export const pullRequestsAssociatedWithBranch = new CachedFunction('associatedBr
 });
 
 export const stateIcon = {
-	// eslint-disable-next-line @typescript-eslint/naming-convention -- The same case as in the API response
+	/* eslint-disable @typescript-eslint/naming-convention -- The same case as in the API response */
 	OPEN: GitPullRequestIcon,
-	// eslint-disable-next-line @typescript-eslint/naming-convention -- The same case as in the API response
 	CLOSED: GitPullRequestClosedIcon,
-	// eslint-disable-next-line @typescript-eslint/naming-convention -- The same case as in the API response
 	MERGED: GitMergeIcon,
-	// eslint-disable-next-line @typescript-eslint/naming-convention -- The same case as in the API response
 	DRAFT: GitPullRequestDraftIcon,
+	/* eslint-enable @typescript-eslint/naming-convention */
 };
 
 async function addLink(branch: HTMLElement): Promise<void> {

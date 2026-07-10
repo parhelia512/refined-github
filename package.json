@@ -74,11 +74,9 @@
 		"zip-text-nodes": "^1.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.2",
+		"@biomejs/biome": "^2.5.3",
 		"@dprint/json": "^0.23.0",
 		"@dprint/typescript": "^0.96.1",
-		"@eslint-react/eslint-plugin": "^5.12.0",
-		"@eslint/compat": "^2.1.0",
 		"@eslint/css": "^1.4.0",
 		"@rollup/plugin-alias": "^6.0.0",
 		"@rollup/plugin-commonjs": "^29.0.3",
@@ -102,9 +100,7 @@
 		"eslint": "^10.6.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-formatter-unix": "^9.0.1",
-		"eslint-import-resolver-typescript": "^4.4.5",
 		"eslint-plugin-byo": "^1.0.1",
-		"eslint-plugin-import-x": "^4.17.1",
 		"eslint-plugin-svelte": "^3.20.0",
 		"fast-ignore": "^2.0.0",
 		"filenamify": "^7.0.2",
@@ -129,6 +125,7 @@
 		"typed-query-selector": "^2.12.2",
 		"typescript": "^6.0.3",
 		"unplugin-lightningcss": "^0.4.5",
+		"vite": "^8.1.4",
 		"vitest": "^4.1.10"
 	},
 	"engines": {

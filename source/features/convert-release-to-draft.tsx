@@ -9,7 +9,7 @@ import {getRepo} from '../github-helpers/index.js';
 import showToast from '../github-helpers/toast.js';
 import observe from '../helpers/selector-observer.js';
 
-const getReleaseEditLinkSelector = (): 'a' => `a[href^="/${getRepo()!.nameWithOwner}/releases/edit"]` as 'a';
+const getReleaseEditLinkSelector = () => `a[href^="/${getRepo()!.nameWithOwner}/releases/edit"]` as const;
 
 async function convertToDraft(): Promise<void> {
 	const tagName = location.pathname.split('/').pop()!;

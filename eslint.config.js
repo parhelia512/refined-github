@@ -1,11 +1,10 @@
-import {includeIgnoreFile} from '@eslint/compat';
 import css from '@eslint/css';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import eslintConfigXo, {jsFilesGlob, tsFilesGlob} from 'eslint-config-xo';
 import byoPlugin from 'eslint-plugin-byo';
 import pluginPromise from 'eslint-plugin-promise';
 import sveltePlugin from 'eslint-plugin-svelte';
-import {defineConfig} from 'eslint/config';
+import {defineConfig, globalIgnores, includeIgnoreFile} from 'eslint/config';
 import globals from 'globals';
 import {fileURLToPath} from 'node:url';
 import selectDom from 'select-dom/eslint-plugin';
@@ -14,7 +13,13 @@ import refinedGithubPlugin from './eslint-rules/index.js';
 import restrictedSyntax from './eslint-rules/restricted-syntax.js';
 
 export default defineConfig([
-	includeIgnoreFile(fileURLToPath(new URL('.gitignore', import.meta.url))),
+	includeIgnoreFile(
+		fileURLToPath(
+			new URL('.gitignore', import.meta.url),
+		),
+		{gitignoreResolution: true},
+	),
+	globalIgnores(['safari', 'package-lock.json']),
 	...eslintConfigXo({
 		browser: true,
 		// TODO: Use after dprint is enabled on TSX files
@@ -76,29 +81,6 @@ export default defineConfig([
 				},
 			],
 
-			'no-restricted-imports': ['error', {
-				paths: [{
-					name: 'clsx',
-					importNames: ['clsx'],
-					message: "Use default import: import cx from 'clsx'",
-				}],
-			}],
-
-			// Allow unassigned imports for CSS and feature files
-			'import-x/no-unassigned-import': ['error', {
-				allow: [
-					'**/*.css',
-					'**/*.scss',
-					'**/*.sass',
-					'**/*.less',
-					'**/features/**',
-					'**/github-helpers/**',
-					'webext-bugs/*',
-					'vite/client',
-					'webext-dynamic-content-scripts',
-				],
-			}],
-
 			// Import-x rules customization
 			'import-x/prefer-default-export': 'error',
 			'import-x/extensions': ['error', {
@@ -107,6 +89,7 @@ export default defineConfig([
 			}],
 
 			// TODO: Probably drop it after moving to dprint
+			// Also: https://github.com/un-ts/eslint-plugin-import-x/issues/500
 			'import-x/order': [
 				'error',
 				{
@@ -213,34 +196,20 @@ export default defineConfig([
 		},
 	},
 	{
-		files: ['**/*.md'],
+		files: ['**/*.js', '**/*.ts', '**/*.svelte', '**/*.html', '**/*.md'],
 		rules: {
+			...eslintConfigPrettier.rules,
+
 			'markdown/no-empty-links': 'off',
-		},
-	},
-	{
-		files: ['**/*.js', '**/*.ts', '**/*.svelte'],
-		...eslintConfigPrettier,
-	},
-	{
-		files: ['**/*.html'],
-		rules: {
+
+			// TODO: Drop after moving to dprint and enabling the global `prettier:compat` option
 			// https://github.com/xojs/eslint-config-xo/issues/106
-			'@html-eslint/sort-attrs': 'off',
-			'@html-eslint/no-non-scalable-viewport': 'off',
 			'@html-eslint/require-closing-tags': 'off',
 			'@html-eslint/require-form-method': 'off',
-			'@html-eslint/require-button-type': 'off',
-			'@html-eslint/require-input-label': 'off',
-			'@html-eslint/require-li-container': 'off',
 			'@html-eslint/indent': 'off',
 			'@html-eslint/attrs-newline': 'off',
 			'@html-eslint/element-newline': 'off',
-			'@html-eslint/use-baseline': 'off',
 			'@html-eslint/require-content': 'off',
 		},
-	},
-	{
-		ignores: ['safari', 'package-lock.json'],
 	},
 ]);
