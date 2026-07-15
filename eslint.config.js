@@ -2,32 +2,24 @@ import css from '@eslint/css';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import eslintConfigXo, {jsFilesGlob, tsFilesGlob} from 'eslint-config-xo';
 import byoPlugin from 'eslint-plugin-byo';
-import pluginPromise from 'eslint-plugin-promise';
 import sveltePlugin from 'eslint-plugin-svelte';
-import {defineConfig, globalIgnores, includeIgnoreFile} from 'eslint/config';
+import {defineConfig, globalIgnores} from 'eslint/config';
 import globals from 'globals';
-import {fileURLToPath} from 'node:url';
 import selectDom from 'select-dom/eslint-plugin';
 
 import refinedGithubPlugin from './eslint-rules/index.js';
 import restrictedSyntax from './eslint-rules/restricted-syntax.js';
 
 export default defineConfig([
-	includeIgnoreFile(
-		fileURLToPath(
-			new URL('.gitignore', import.meta.url),
-		),
-		{gitignoreResolution: true},
-	),
 	globalIgnores(['safari', 'package-lock.json']),
 	...eslintConfigXo({
 		browser: true,
+		gitignore: import.meta.url,
 		// TODO: Use after dprint is enabled on TSX files
 		// prettier: 'compat',
 	}),
 	{
 		plugins: {
-			promise: pluginPromise,
 			byo: byoPlugin,
 			'refined-github': refinedGithubPlugin,
 			'select-dom': selectDom,
@@ -53,10 +45,10 @@ export default defineConfig([
 			'no-alert': 'off',
 			'no-console': 'off',
 			'no-warning-comments': 'off', // Noise
-			'promise/prefer-await-to-then': ['error', {strict: false}], // Allows `await x.catch()`
 			'require-unicode-regexp': 'off', // Don't care
 			'regexp/no-useless-character-class': 'off', // Ugly
 			'regexp/no-super-linear-move': 'off', // It is what is is
+			'unicorn/consistent-boolean-name': 'off', // Impractical
 			'unicorn/dom-node-dataset': 'off',
 			'unicorn/max-nested-calls': 'off', // 3 is too low, can't be bothered rn
 			'unicorn/no-break-in-nested-loop': 'off', // Don't care
@@ -64,10 +56,9 @@ export default defineConfig([
 			'unicorn/no-this-outside-of-class': 'off', // Simpler than alternatives
 			'unicorn/no-unreadable-new-expression': 'off', // Me no like
 			'unicorn/no-unsafe-string-replacement': 'off', // Not a real issue
-			'unicorn/prefer-await': 'off', // Native TS rule is preferred
+			'unicorn/prefer-dom-node-html-methods': 'off', // TODO: 2027
 			'unicorn/prefer-iterator-to-array': 'off', // TODO: 2027
 			'unicorn/prefer-short-arrow-method': 'off', // No like https://github.com/sindresorhus/eslint-plugin-unicorn/pull/3118#issuecomment-4699459112
-			'unicorn/consistent-boolean-name': 'off', // Impractical
 			'unicorn/name-replacements': [
 				'error',
 				{
@@ -83,10 +74,7 @@ export default defineConfig([
 
 			// Import-x rules customization
 			'import-x/prefer-default-export': 'error',
-			'import-x/extensions': ['error', {
-				js: 'ignorePackages',
-				json: 'always',
-			}],
+			'import-x/extensions': 'off', // TODO: https://github.com/xojs/eslint-config-xo/issues/119#issuecomment-4979192969
 
 			// TODO: Probably drop it after moving to dprint
 			// Also: https://github.com/un-ts/eslint-plugin-import-x/issues/500
@@ -196,11 +184,23 @@ export default defineConfig([
 		},
 	},
 	{
-		files: ['**/*.js', '**/*.ts', '**/*.svelte', '**/*.html', '**/*.md'],
+		files: ['**/package.json'],
+		rules: {
+			'package-json/no-orphan-types': ['error', {
+				'ignore': ['react'],
+			}],
+		},
+	},
+	{
+		// Dprint doesn't run on tsx files yet, we need to allow style eslint rules
+		ignores: [
+			'**/*.tsx',
+		],
 		rules: {
 			...eslintConfigPrettier.rules,
 
 			'markdown/no-empty-links': 'off',
+			'package-json/require-fields': 'off', // Never needed name and version
 
 			// TODO: Drop after moving to dprint and enabling the global `prettier:compat` option
 			// https://github.com/xojs/eslint-config-xo/issues/106
