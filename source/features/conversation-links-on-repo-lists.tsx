@@ -34,41 +34,31 @@ function addConversationLinks(repositoryLink: HTMLAnchorElement): void {
 	);
 }
 
-function addSearchConversationLinks(repositoryLink: HTMLAnchorElement): void {
-	// Do not move to `includes` until React AJAX issues are resolved:
-	// https://github.com/refined-github/refined-github/pull/7524#issuecomment-2211692096
-	// https://github.com/refined-github/refined-github/issues/6554
-	if (new URLSearchParams(location.search).get('type') !== 'repositories') {
-		return;
-	}
-
-	// Place before the update date ·
-	closestElement('[data-testid="results-list"] > div', repositoryLink)
-		.querySelector(':scope ul > span:last-of-type')!
-		.before(
-			<span
-				aria-hidden="true"
-				className="color-fg-muted mx-2 tmp-mx-2"
+function addSearchConversationLinks(stargazersLink: HTMLAnchorElement): void {
+	closestElement('li', stargazersLink).after(
+		<span
+			aria-hidden="true"
+			className="color-fg-muted mx-2 tmp-mx-2"
+		>
+			·
+		</span>,
+		<li className="d-flex text-small">
+			<a
+				className="Link--muted"
+				href={stargazersLink.href + '/issues'}
 			>
-				·
-			</span>,
-			<li className="d-flex text-small">
-				<a
-					className="Link--muted"
-					href={repositoryLink.href + '/issues'}
-				>
-					<IssueOpenedIcon />
-				</a>
-			</li>,
-			<li className="d-flex text-small ml-2 tmp-ml-2">
-				<a
-					className="Link--muted"
-					href={repositoryLink.href + '/pulls'}
-				>
-					<GitPullRequestIcon />
-				</a>
-			</li>,
-		);
+				<IssueOpenedIcon />
+			</a>
+		</li>,
+		<li className="d-flex text-small ml-2 tmp-ml-2">
+			<a
+				className="Link--muted"
+				href={stargazersLink.href + '/pulls'}
+			>
+				<GitPullRequestIcon />
+			</a>
+		</li>,
+	);
 }
 
 function init(signal: AbortSignal): void {
@@ -76,7 +66,7 @@ function init(signal: AbortSignal): void {
 }
 
 function initSearch(signal: AbortSignal): void {
-	observe('.search-title a', addSearchConversationLinks, {signal});
+	observe('a[class^="Repositories-module__stargazersLink"]', addSearchConversationLinks, {signal});
 }
 
 void features.add(import.meta.url, {
@@ -85,8 +75,9 @@ void features.add(import.meta.url, {
 	],
 	init,
 }, {
-	include: [
+	asLongAs: [
 		pageDetect.isGlobalSearchResults,
+		() => new URLSearchParams(location.search).get('type') === 'repositories',
 	],
 	init: initSearch,
 });
