@@ -66,6 +66,7 @@ function generateTab(item: HTMLAnchorElement): Tab {
 	return {
 		id: itemId,
 		href: item.href,
+		reactNav: item.getAttribute('data-react-nav') ?? undefined,
 		label,
 		icon,
 		counter: readable(counter),

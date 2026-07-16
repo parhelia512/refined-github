@@ -7,6 +7,7 @@ export type Tab = {
 	href: string;
 	label: string;
 	icon: typeof CodeIcon;
+	reactNav?: string;
 	counter?: Readable<number | string | undefined>;
 	tooltip?: string;
 	selected?: () => boolean | Promise<boolean>;

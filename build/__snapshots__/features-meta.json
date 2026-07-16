@@ -43,7 +43,7 @@
 	},
 	{
 		"id": "bugs-tab",
-		"description": "Adds a \"Bugs\" tab to repos, if there are any open issues with the \"bug\" label.",
+		"description": "Adds a \"Bugs\" tab to repos, if there are any open issues with the \"bug\" label (depends on <code>extensible-nav</code> feature).",
 		"screenshot": "https://user-images.githubusercontent.com/46634000/156766081-f2ea100b-a9f3-472b-bddc-a984a88ddcd3.png"
 	},
 	{
@@ -283,7 +283,7 @@
 	},
 	{
 		"id": "extensible-nav",
-		"description": "This is a core feature that enables other Refined GitHub features to extend or modify the repository navigation bar. Currently opt-in for testing.",
+		"description": "Beta: This is a core feature that enables other Refined GitHub features to extend or modify the repository navigation bar. Currently opt-in for testing.",
 		"css": true,
 		"screenshot": null
 	},
@@ -490,7 +490,7 @@
 	},
 	{
 		"id": "mobile-tabs",
-		"description": "Makes the tabs more compact on mobile so more of them can be seen.",
+		"description": "Makes the tabs more compact on mobile so more of them can be seen (depends on <code>extensible-nav</code> feature).",
 		"css": true,
 		"cssOnly": true,
 		"screenshot": "https://user-images.githubusercontent.com/1402241/245446231-28f44b59-0151-4986-8cb9-05b5645592d8.png"
@@ -795,7 +795,7 @@
 	},
 	{
 		"id": "releases-tab",
-		"description": "Adds a <code>Releases</code> tab and a keyboard shortcut: <kbd>g</kbd> <kbd>r</kbd>.",
+		"description": "Adds a <code>Releases</code> tab and a keyboard shortcut: <kbd>g</kbd> <kbd>r</kbd> (depends on <code>extensible-nav</code> feature).",
 		"screenshot": "https://cloud.githubusercontent.com/assets/170270/13136797/16d3f0ea-d64f-11e5-8a45-d771c903038f.png"
 	},
 	{
