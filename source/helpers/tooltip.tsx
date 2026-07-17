@@ -1,10 +1,6 @@
-import './tooltip.css';
+import {mount} from 'svelte';
 
-import React from 'dom-chef';
-import {lastElement} from 'select-dom';
-
-import {upperCaseFirst} from '../github-helpers/index.js';
-import joinJsx from './join-jsx.js';
+import Tooltip from './tooltip.svelte';
 
 export type TooltipOptions = {
 	label: string;
@@ -13,88 +9,38 @@ export type TooltipOptions = {
 	type?: 'label' | 'description';
 };
 
-function renderShortcut(shortcut: string): JSX.Element {
-	const keys = shortcut.split(' ').map(key => (
-		<span className="rgh-shortcut-chord" data-kbd-chord="true">
-			{upperCaseFirst(key)}
-		</span>
-	));
-	return (
-		<kbd className="rgh-shortcut">
-			{joinJsx(' ', keys)}
-		</kbd>
-	);
-}
-
-function createTooltipFor(element: Element, content: string | TooltipOptions): HTMLElement {
-	const options: TooltipOptions = typeof content === 'string'
-		? {label: content}
-		: content;
-
+function createTooltipFor(element: Element, content: string | TooltipOptions): void {
 	// Ensure the element has an ID for the `for` attribute to link to
 	element.id ||= crypto.randomUUID();
 
 	const tooltipId = crypto.randomUUID();
 	element.setAttribute('aria-labelledby', tooltipId);
 
-	return (
-		<tool-tip
-			id={tooltipId}
-			className="sr-only position-absolute"
-			for={element.id}
-			popover="manual"
-			data-direction={options.direction ?? 's'}
-			data-type={options.type ?? 'label'}
-			aria-hidden="true"
-			role="tooltip"
-		>
-			{options.label}
-			{options.shortcut && renderShortcut(options.shortcut)}
-		</tool-tip>
-	);
-}
-
-/**
-Align tooltip behavior with native
-https://github.com/refined-github/refined-github/pull/9668
-*/
-function attachToDocument(tooltip: HTMLElement): void {
-	lastElement([
-		'#js-repo-pjax-container',
-		'#js-pjax-container',
-		'#repo-content-turbo-frame',
-		'#repo-content-pjax-container',
-		'[data-turbo-body]', // User profile
-	]).append(tooltip);
+	const options = typeof content === 'string' ? {label: content} : content;
+	mount(Tooltip, {
+		target: element,
+		props: {
+			id: tooltipId,
+			htmlFor: element.id,
+			...options,
+		},
+	});
 }
 
 /**
 Generates a tooltip for the received element. You should use this when generating elements via JSX
-
 @example return <div>{tooltipped('Does something', <button type="button">...</button>)}</div>;
 */
 export function tooltipped(
 	content: string | TooltipOptions,
 	element: Element,
 ): Element {
-	const tooltip = createTooltipFor(element, content);
-	element.append(tooltip);
-
-	queueMicrotask(() => {
-		// TODO: Replace with https://github.com/sindresorhus/ts-extras/issues/75
-		if (!element.isConnected) {
-			throw new Error('Element must be attached to the document before the tooltip');
-		}
-
-		attachToDocument(tooltip);
-	});
-
+	createTooltipFor(element, content);
 	return element;
 }
 
 /**
 Attaches a tooltip to an existing element. Don't use this with JSX.
-
 @example addTooltip('Does something', $('.some-existing-button'))
 */
 export default function addTooltip(
@@ -105,8 +51,5 @@ export default function addTooltip(
 		throw new Error('Element has no parent. Use `tooltipped` instead for elements not yet attached to a parent.');
 	}
 
-	const tooltip = createTooltipFor(element, content);
-	// Attach to element first just in case the global container is missing. This also "activates" the tool-tip element.
-	element.append(tooltip);
-	attachToDocument(tooltip);
+	createTooltipFor(element, content);
 }
