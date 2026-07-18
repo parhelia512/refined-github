@@ -79,8 +79,9 @@ async function replaceResolveConflictsDropdown(button: HTMLButtonElement): Promi
 }
 
 function initPrConversation(signal: AbortSignal): void {
+	// `data-component` is used to avoid selecting our button and one of the files with conflicts
 	observe(
-		'[aria-label="Conflicts"] [class^="MergeBoxSectionHeader-module__wrapper"] button[data-component="Button"]',
+		'[aria-label="Conflicts"] [class^="MergeBoxSectionHeader-module__wrapper"] button[data-component$="Button"]',
 		replaceResolveConflictsDropdown,
 		{signal},
 	);
